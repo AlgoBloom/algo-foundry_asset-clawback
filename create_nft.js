@@ -25,4 +25,24 @@ const submitToNetwork = async (signedTxn) => {
 const createNFT = async () => {
     // address that is creating the NFT
     const from = creator.addr;
+    // frozen is set to false
+    const defaultFrozen = false; 
+    // unit name is MND
+    const unitName = "MND";
+    // asset name is Mandala NFT
+    const assetName = "Mandala NFT";
+    // the URL where the asset meta data may be found
+    const assetURL = "https://path/to/my/nft/asset/metadata.json";
+    // manager address is initialized as the creator address
+    const manager = creator.addr;
+    // reserve is initialized as undefined
+    const reserve = undefined;
+    // freeze is intialized as undefined
+    const freeze = undefined;
+    // clawback should be true
+    const clawback = true;
+    // total should be one, NFTs always have issuance of exactly one
+    const total = 1;
+    // pure NFTs have zero decimals
+    const decimals = 0;
 }
