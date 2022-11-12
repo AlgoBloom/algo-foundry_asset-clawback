@@ -20,3 +20,9 @@ const submitToNetwork = async (signedTxn) => {
     // the submit to network function returns the confirmed transaction object
     return confirmedTxn;
 }
+
+// this function creates the NFTs
+const createNFT = async () => {
+    // address that is creating the NFT
+    const from = creator.addr;
+}
