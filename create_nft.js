@@ -39,8 +39,8 @@ const createNFT = async () => {
     const reserve = undefined;
     // freeze is intialized as undefined
     const freeze = undefined;
-    // clawback should be true
-    const clawback = true;
+    // creator is able to clawback the asset
+    const clawback = creator.addr;
     // total should be one, NFTs always have issuance of exactly one
     const total = 1;
     // pure NFTs have zero decimals
@@ -48,4 +48,21 @@ const createNFT = async () => {
 
     // builds suggested params including fee amount
     const suggestedParams = await algodClient.getTransactionParams().do();
+
+    // builds transaction that will be submitted to the AVM
+    const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
+        // parameters are loaded in from above where defined
+        from,
+        total,
+        decimals,
+        assetName,
+        unitName,
+        assetURL,
+        defaultFrozen,
+        suggestedParams,
+        freeze,
+        manager,
+        clawback,
+        reserve,
+    });
 }
