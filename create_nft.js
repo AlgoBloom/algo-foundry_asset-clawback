@@ -11,4 +11,9 @@ const creatorSecretKey = algosdk.mnemonicToSecretKey(process.env.MNEMONIC_CREATO
 const submitToNetwork = async (signedTxn) => {
     // returns txn object
     let txn = await algodClient.sendRawTransaction(signedTxn).do();
+    // print the txn id
+    console.log("Transaction ID is: " + txn.txnId);
+    // wait for confirmation of transaction completion, save object in var
+    let confirmedTxn = await algosdk.waitForConfirmation(algodClient, txn.txnId, 4);
+    //
 }
