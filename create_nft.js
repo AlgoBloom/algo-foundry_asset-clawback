@@ -15,5 +15,8 @@ const submitToNetwork = async (signedTxn) => {
     console.log("Transaction ID is: " + txn.txnId);
     // wait for confirmation of transaction completion, save object in var
     let confirmedTxn = await algosdk.waitForConfirmation(algodClient, txn.txnId, 4);
-    //
+    // log information about completed transaction
+    console.log("Transaction with ID " + txn.txnId + " confirmed in round " + confirmedTxn["confirmed-round"]);
+    // the submit to network function returns the confirmed transaction object
+    return confirmedTxn;
 }
