@@ -3,7 +3,9 @@
 Perform an asset clawback from one account to another. You are required to do the following,
 
 1. Create the asset. It can be an NFT or a fungible token.
+
 2. Send this asset to an account.
+
 3. Perform a clawback of this asset and send it to another account.
 
 Write your solution in the skeleton code provided in `clawback.js`
