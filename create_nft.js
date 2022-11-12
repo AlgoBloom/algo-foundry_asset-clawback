@@ -45,4 +45,7 @@ const createNFT = async () => {
     const total = 1;
     // pure NFTs have zero decimals
     const decimals = 0;
+
+    // builds suggested params including fee amount
+    const suggestedParams = await algodClient.getTransactionParams().do();
 }
