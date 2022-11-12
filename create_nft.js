@@ -45,11 +45,10 @@ const createNFT = async () => {
     const total = 1;
     // pure NFTs have zero decimals
     const decimals = 0;
-
     // builds suggested params including fee amount
     const suggestedParams = await algodClient.getTransactionParams().do();
-
     // builds transaction that will be submitted to the AVM
+
     const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
         // parameters are loaded in from above where defined
         from,
@@ -65,4 +64,12 @@ const createNFT = async () => {
         clawback,
         reserve,
     });
-}
+
+    // signed transaction is returned as a object and saved in signed transaction variable
+    const signedTxn = txn.signTxn(creator.sk);
+    // returns the confirmed transaction object after the signed transaction is submitted to the network
+    const confirmedTxn = await submitToNetwork(signedTxn);
+    
+    // finally the asset ID is retured by the create NFT function
+    return confirmedTxn["asset-index"]
+};
