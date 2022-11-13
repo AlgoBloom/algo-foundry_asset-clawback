@@ -84,4 +84,11 @@ const getCreatedAsset = async (account, assetId) => {
         // returns true if asset index equals the asset id ?
         return asset["index"] === assetId;
     });
-}
+    // return the asset constant
+    return asset;
+};
+
+// this actually runs the logic of the script using functions below
+(async () => {
+
+})
