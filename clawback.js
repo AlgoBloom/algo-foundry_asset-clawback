@@ -87,14 +87,30 @@ const assetOptIn = async (receiver, assetId) => {
     return await submitToNetwork(signedTxn);
 };
 
-const transferAsset = async (receiver, assetId, amount) => {
+const transferAsset = async (receiver, assetId) => {
     const suggestedParams = await algodClient.getTransactionParams().do();
     let txn = algosdk.makeAssetTransferTxnWithSuggestedParams(
         creator.addr,
         receiver.addr,
         undefined,
         undefined,
-        amount,
+        1,
+        undefined,
+        assetId,
+        suggestedParams
+    );
+    const signedTxn = txn.signTxn(creator.sk);
+    return await submitToNetwork(signedTxn);
+};
+
+const clawbackAsset = async (receiver, assetId) => {
+    const suggestedParams = await algodClient.getTransactionParams().do();
+    let txn = algosdk.makeAssetTransferTxnWithSuggestedParams(
+        creator.addr,
+        receiver.addr,
+        undefined,
+        receiver.addr,
+        1,
         undefined,
         assetId,
         suggestedParams
@@ -112,7 +128,10 @@ const transferAsset = async (receiver, assetId, amount) => {
     const receiverOptedIn = await assetOptIn(receiver, assetId);
     console.log("Receiver has opted in to asset " + assetId);
     console.log(receiverOptedIn);
-    const receiverReceivedAsset = await transferAsset(receiver, assetId, 1);
+    const receiverReceivedAsset = await transferAsset(receiver, assetId);
     console.log("Asset transfer complete.");
     console.log(receiverReceivedAsset);
+    const clawbackCompleted = await clawbackAsset(receiver, assetId);
+    console.log("Clawback has been completed.");
+    console.log(clawbackCompleted);
 })();
