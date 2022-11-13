@@ -1,5 +1,6 @@
 // importing algosdk
 const algosdk = require("algosdk");
+const { Account } = require("algosdk/dist/types/src/client/v2/algod/models/types");
 
 // using algosdk to create a algod client instance
 const algodClient = new algosdk.Algodv2(process.env.ALGOD_TOKEN, process.env.ALGOD_SERVER, process.env.ALGOD_PORT);
@@ -73,3 +74,13 @@ const createNFT = async () => {
     // finally the asset ID is retured by the create NFT function
     return confirmedTxn["asset-index"]
 };
+
+// gets the created asset information
+const getCreatedAsset = async (account, assetId) => {
+    //  gets account info from algod
+    let accountInfo = await algodClient.accountInformation(account.addr).do();
+    // returns account info in 
+    const asset = accountInfo["created-assets"].find((asset) => {
+
+    });
+}
