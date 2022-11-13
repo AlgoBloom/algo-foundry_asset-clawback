@@ -81,6 +81,7 @@ const getCreatedAsset = async (account, assetId) => {
     let accountInfo = await algodClient.accountInformation(account.addr).do();
     // returns account info in 
     const asset = accountInfo["created-assets"].find((asset) => {
-
+        // returns true if asset index equals the asset id ?
+        return asset["index"] === assetId;
     });
 }
