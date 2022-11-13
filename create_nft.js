@@ -1,57 +1,43 @@
-// importing algosdk
 const algosdk = require("algosdk");
-const { Account } = require("algosdk/dist/types/src/client/v2/algod/models/types");
 
-// using algosdk to create a algod client instance
 const algodClient = new algosdk.Algodv2(process.env.ALGOD_TOKEN, process.env.ALGOD_SERVER, process.env.ALGOD_PORT);
 
-// secret key of creator
-const creatorSecretKey = algosdk.mnemonicToSecretKey(process.env.MNEMONIC_CREATOR);
+const creator = algosdk.mnemonicToSecretKey(process.env.MNEMONIC_CREATOR);
+const receiver = algosdk.mnemonicToSecretKey(process.env.MNEMONIC_RECEIVER);
 
-// this function submits the txn to the network
 const submitToNetwork = async (signedTxn) => {
-    // returns txn object
-    let txn = await algodClient.sendRawTransaction(signedTxn).do();
-    // print the txn id
-    console.log("Transaction ID is: " + txn.txnId);
-    // wait for confirmation of transaction completion, save object in var
-    let confirmedTxn = await algosdk.waitForConfirmation(algodClient, txn.txnId, 4);
-    // log information about completed transaction
-    console.log("Transaction with ID " + txn.txnId + " confirmed in round " + confirmedTxn["confirmed-round"]);
-    // the submit to network function returns the confirmed transaction object
+    // send txn
+    let tx = await algodClient.sendRawTransaction(signedTxn).do();
+    console.log("Transaction : " + tx.txId);
+
+    // Wait for transaction to be confirmed
+    confirmedTxn = await algosdk.waitForConfirmation(algodClient, tx.txId, 4);
+
+    //Get the completed Transaction
+    console.log("Transaction " + tx.txId + " confirmed in round " + confirmedTxn["confirmed-round"]);
+
     return confirmedTxn;
-}
+};
 
-// this function creates the NFTs
 const createNFT = async () => {
-    // address that is creating the NFT
     const from = creator.addr;
-    // frozen is set to false
-    const defaultFrozen = false; 
-    // unit name is MND
-    const unitName = "MND";
-    // asset name is Mandala NFT
-    const assetName = "Mandala NFT";
-    // the URL where the asset meta data may be found
+    const defaultFrozen = false;
+    const unitName = "TST1"; //8 characters max
+    const assetName = "Algo Foundry NFT";
     const assetURL = "https://path/to/my/nft/asset/metadata.json";
-    // manager address is initialized as the creator address
     const manager = creator.addr;
-    // reserve is initialized as undefined
     const reserve = undefined;
-    // freeze is intialized as undefined
     const freeze = undefined;
-    // creator is able to clawback the asset
     const clawback = creator.addr;
-    // total should be one, NFTs always have issuance of exactly one
-    const total = 1;
-    // pure NFTs have zero decimals
-    const decimals = 0;
-    // builds suggested params including fee amount
-    const suggestedParams = await algodClient.getTransactionParams().do();
-    // builds transaction that will be submitted to the AVM
+    const total = 1; // NFTs have totalIssuance of exactly 1
+    const decimals = 0; // NFTs have decimals of exactly 0
 
+    // create suggested parameters
+    const suggestedParams = await algodClient.getTransactionParams().do();
+
+    // Create the asset creation transaction
+    // For mutable params, set undefined instead of empty string so that no one can control it
     const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
-        // parameters are loaded in from above where defined
         from,
         total,
         decimals,
@@ -66,29 +52,64 @@ const createNFT = async () => {
         reserve,
     });
 
-    // signed transaction is returned as a object and saved in signed transaction variable
+    // Sign the transaction
     const signedTxn = txn.signTxn(creator.sk);
-    // returns the confirmed transaction object after the signed transaction is submitted to the network
+
     const confirmedTxn = await submitToNetwork(signedTxn);
-    
-    // finally the asset ID is retured by the create NFT function
-    return confirmedTxn["asset-index"]
+
+    return confirmedTxn["asset-index"];
 };
 
-// gets the created asset information
 const getCreatedAsset = async (account, assetId) => {
-    //  gets account info from algod
     let accountInfo = await algodClient.accountInformation(account.addr).do();
-    // returns account info in 
+
     const asset = accountInfo["created-assets"].find((asset) => {
-        // returns true if asset index equals the asset id ?
         return asset["index"] === assetId;
     });
-    // return the asset constant
+
     return asset;
 };
 
-// this actually runs the logic of the script using functions below
-(async () => {
+const assetOptIn = async (receiver, assetId) => {
+    const suggestedParams = await algodClient.getTransactionParams().do();
+    let txn = algosdk.makeAssetTransferTxnWithSuggestedParams(
+        receiver.addr,
+        receiver.addr,
+        undefined,
+        undefined,
+        0,
+        undefined,
+        assetId,
+        suggestedParams
+    );
 
-})
+    let signedTxn = txn.signTxn(receiver.sk);
+    return await submitToNetwork(signedTxn);
+};
+
+const transferAsset = async (receiver, assetId, amount) => {
+    const suggestedParams = await algodClient.getTransactionParams().do();
+    let txn = algosdk.makeAssetTransferTxnWithSuggestedParams(
+        creator.addr,
+        receiver.addr,
+        undefined,
+        undefined,
+        amount,
+        undefined,
+        assetId,
+        suggestedParams
+    );
+    const signedTxn = txn.signTxn(creator.sk);
+    return await submitToNetwork(signedTxn);
+};
+
+(async () => {
+    console.log("Creating NFT...");
+    const assetId = await createNFT().catch(console.error);
+    let asset = await getCreatedAsset(creator, assetId);
+    console.log("NFT Created");
+    console.log(asset);
+    const receiverOptedIn = await assetOptIn(receiver, assetId);
+    console.log("Receiver has opted in to asset " + assetId);
+    console.log(receiverOptedIn);
+})();
